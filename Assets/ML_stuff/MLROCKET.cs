@@ -10,6 +10,7 @@ public class MLROCKET : Agent
 {
     private Rigidbody rBody;
     private properties properties;
+    [SerializeField]
     private float smooth = 3f;
     [SerializeField]
     private GameObject target;
@@ -28,7 +29,7 @@ public class MLROCKET : Agent
         rBody.velocity = Vector3.zero;
         gameObject.transform.position = originalPos;
         Debug.Log("attempting to assign transform");
-        targetTransform.localPosition = new Vector3(Random.Range(-2800,2800),0,Random.Range(1800,2800));
+        targetTransform.localPosition = new Vector3(Random.Range(-2800,2800),Random.Range(1800,2800),0);
         Debug.Log(targetTransform.localPosition);
         Debug.Log("Attempting to instantiate");
         oldTargets = GameObject.FindGameObjectsWithTag("target");
@@ -77,7 +78,7 @@ public class MLROCKET : Agent
             //ResetEnv();
             EndEpisode();
         }
-        else if (distanceToHome > 10000f)
+        else if (distanceToHome > 100000f)
         {
             Debug.Log("Lost to the void");
             EndEpisode();
