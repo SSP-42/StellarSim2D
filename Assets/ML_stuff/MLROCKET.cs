@@ -18,16 +18,21 @@ public class MLROCKET : Agent
     Transform targetTransform;
     Vector3 originalPos;
     private GameObject[] oldTargets;
+    public bool thrusting; // There has to be a better name for this.
+    private Quaternion originalRot;
     void Start(){
-        originalPos = gameObject.transform.position;
         Debug.Log("Assigning variables");
+        originalPos = gameObject.transform.position;
+        originalRot = gameObject.transform.rotation;
         rBody = this.GetComponent<Rigidbody>();
         properties = this.GetComponent<properties>();
     }
     public override void OnEpisodeBegin()
     {
+        // reset rocket and create new target
         rBody.velocity = Vector3.zero;
         gameObject.transform.position = originalPos;
+        gameObject.transform.rotation = originalRot;
         Debug.Log("attempting to assign transform");
         targetTransform.localPosition = new Vector3(Random.Range(-2800,2800),Random.Range(1800,2800),0);
         Debug.Log(targetTransform.localPosition);
@@ -61,7 +66,12 @@ public class MLROCKET : Agent
 
         if (actionBuffers.ContinuousActions[1] > 0f)
         {
-            Thrust(actionBuffers.ContinuousActions[1]);
+            rBody.AddForce(transform.up*actionBuffers.ContinuousActions[1]*1000);
+            //thrusting = true;
+        }
+        else if (actionBuffers.ContinuousActions[1] == 0f)
+        {
+            //thrusting = false;
         }
         //* Rewards
         float distanceToTarget = Vector3.Distance(this.transform.localPosition,targetTransform.localPosition);
@@ -75,7 +85,6 @@ public class MLROCKET : Agent
         else if (properties.contact == true){
             Debug.Log("Crashlanding");
             SetReward(-2.0f);
-            //ResetEnv();
             EndEpisode();
         }
         else if (distanceToHome > 100000f)
@@ -92,9 +101,5 @@ public class MLROCKET : Agent
         continuousActionsOut[0] = z;
         continuousActionsOut[1] = test_thrust;
 
-    }
-    void Thrust(float Thrust)
-    {
-        rBody.AddForce(transform.up*Thrust*1000);
     }
 }

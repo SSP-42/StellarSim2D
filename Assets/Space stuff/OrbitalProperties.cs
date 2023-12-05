@@ -23,17 +23,22 @@ public class OrbitalProperties : MonoBehaviour
     private float perigee;
     [SerializeField]
     private float angularMomentum;
-    private Vector3 perigeeVector;
     [SerializeField]
     private float distanceToHome;
     [SerializeField]
     private float twoDVelocity;
+    [SerializeField]
+    private float eccentricity;
+    private Vector3 upward;
+    // I should add a system for checking if it is a rocket.
+    private MLROCKET mlRocket;
 
 
     void Awake()
     {
         celestials = GameObject.FindGameObjectsWithTag("Celestial");
         rBody = this.GetComponent<Rigidbody>();
+        mlRocket = this.GetComponent<MLROCKET>();
         gravitaionalConstant =  gravWell.gravitaionalConstant;
         GM = FindGM();
     }
@@ -42,7 +47,9 @@ public class OrbitalProperties : MonoBehaviour
     {
         twoDVelocity = Math.Abs(Mathf.Sqrt((float)Math.Pow(velocity.x,2)+(float)Math.Pow(velocity.y,2)));
         velocity = rBody.velocity;
-        zenith = Vector3.Angle(this.transform.position,velocity.normalized);
+        upward = rBody.position + transform.up;
+        var zeros = Vector3.zero;
+        zenith = Vector3.Angle(upward-this.transform.position,zeros-this.transform.position);
         distanceToHome = Vector3.Distance(Vector3.zero, this.transform.position);
         angularMomentum = distanceToHome*rBody.mass*twoDVelocity;
         FindApogee();
@@ -83,9 +90,31 @@ public class OrbitalProperties : MonoBehaviour
     {
         var r1 = distanceToHome;
         var v1 = twoDVelocity;
-        var gamma = zenith;
-        var C  = 2 * GM / (r1*(float)Math.Pow(v1,2));
-        apogee = ((-C - (float)Math.Sqrt((float)Math.Pow(C,2) - 4 * (1-C) * - (float)Math.Pow((float)Mathf.Sin(gamma),2)))/ (2*(1-C))) * r1;
-        perigee = ((-C + (float)Math.Sqrt((float)Math.Pow(C,2) - 4 * (1-C) * - (float)Math.Pow((float)Mathf.Sin(gamma),2)))/ (2*(1-C))) * r1;
+        if (mlRocket.thrusting)
+        {
+            var gamma = zenith;
+            var C  = 2 * GM / (r1*(float)Math.Pow(v1,2));
+            var a = ((-C - (float)Math.Sqrt((float)Math.Pow(C,2) - 4 * (1-C) * - (float)Math.Pow((float)Mathf.Sin(gamma),2)))/ (2*(1-C))) * r1;
+            var b = ((-C + (float)Math.Sqrt((float)Math.Pow(C,2) - 4 * (1-C) * - (float)Math.Pow((float)Mathf.Sin(gamma),2)))/ (2*(1-C))) * r1;
+            if (a>b)
+            {
+                apogee = a;
+                perigee = b;
+            }
+            else{
+                apogee = b;
+                perigee = a;
+            }
+        }
+        else {
+            eccentricity = FindEccentricity();
+            perigee = (float)(Math.Pow(angularMomentum,2)/(GM*Math.Pow(rBody.mass,2)))*(1/1-eccentricity);
+            apogee = (float)(Math.Pow(angularMomentum,2)/(GM*Math.Pow(rBody.mass,2)))*(1/1+eccentricity);
+        }
+    }
+    float FindEccentricity()
+    {
+        var e = (float)(Math.Pow(angularMomentum,2)-(distanceToHome*zenith)*GM*Math.Pow(rBody.mass,2))/((distanceToHome*zenith)*GM*Math.Pow(rBody.mass,2)-Math.Cos(zenith));
+        return (float)Math.Abs(e);
     }
 }
