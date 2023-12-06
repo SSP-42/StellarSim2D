@@ -70,3 +70,10 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+# Models (They should be stored in designated repo
+*.onnx
+*.onnx.meta
+*.pt
+*.pt.meta
+*.nn
+*.nn.meta
