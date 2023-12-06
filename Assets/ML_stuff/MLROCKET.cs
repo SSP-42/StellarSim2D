@@ -82,6 +82,12 @@ public class MLROCKET : Agent
             SetReward(2f);
             EndEpisode();
         }
+        else if (distanceToTarget < 700f)
+        {
+            Debug.Log("Target approach");
+            Debug.Log(distanceToTarget);
+            SetReward(1/distanceToHome);
+        }
         else if (properties.contact == true){
             Debug.Log("Crashlanding");
             SetReward(-2.0f);
