@@ -34,7 +34,7 @@ public class MLROCKET : Agent
         gameObject.transform.position = originalPos;
         gameObject.transform.rotation = originalRot;
         Debug.Log("attempting to assign transform");
-        targetTransform.localPosition = new Vector3(Random.Range(-2800,2800),Random.Range(1800,2800),0);
+        targetTransform.localPosition = new Vector3(Random.Range(1800,2800),Random.Range(1800,2800),0);
         Debug.Log(targetTransform.localPosition);
         Debug.Log("Attempting to instantiate");
         oldTargets = GameObject.FindGameObjectsWithTag("target");
@@ -76,13 +76,13 @@ public class MLROCKET : Agent
         //* Rewards
         float distanceToTarget = Vector3.Distance(this.transform.localPosition,targetTransform.localPosition);
         float distanceToHome = Vector3.Distance(this.transform.localPosition,Vector3.zero);
-        if (distanceToTarget < 10f)
+        if (distanceToTarget < 300f)
         {
             Debug.Log("hit target");
             SetReward(2f);
             EndEpisode();
         }
-        else if (distanceToTarget < 700f)
+        else if (distanceToTarget < 500f)
         {
             Debug.Log("Target approach");
             Debug.Log(distanceToTarget);

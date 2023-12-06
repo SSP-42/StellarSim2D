@@ -10,37 +10,44 @@ public class Orbiter : Agent
 {
     private Rigidbody rBody;
     private properties properties;
+    private OrbitalProperties orbitalProperties;
     [SerializeField]
     private float smooth = 3f;
     Vector3 originalPos;
     public bool thrusting; // There has to be a better name for this.
+    private float apoapsis;
+    private float periapsis;
     private Quaternion originalRot;
+    private bool acheivedTargetOrbit;
     void Start(){
         Debug.Log("Assigning variables");
         originalPos = gameObject.transform.position;
         originalRot = gameObject.transform.rotation;
         rBody = this.GetComponent<Rigidbody>();
         properties = this.GetComponent<properties>();
+        orbitalProperties = this.GetComponent<OrbitalProperties>();
     }
     public override void OnEpisodeBegin()
     {
-        // reset rocket and create new target
+        // reset rocket and create new target apoapsis and periapsis
         rBody.velocity = Vector3.zero;
         gameObject.transform.position = originalPos;
         gameObject.transform.rotation = originalRot;
+        apoapsis = Random.Range(2000,3000);
+        periapsis = Random.Range(2000,3000);
 
     }
     public override void CollectObservations(VectorSensor sensor)
     {
         //*target and self positon
-        sensor.AddObservation(this.transform.localPosition);
+        sensor.AddObservation(orbitalProperties.apogee);
+        sensor.AddObservation(orbitalProperties.perigee);
+        sensor.AddObservation(apoapsis);
+        sensor.AddObservation(periapsis);
         //*current velocity
         sensor.AddObservation(rBody.velocity.x);
         sensor.AddObservation(rBody.velocity.y);
-        sensor.AddObservation(rBody.velocity.z);
         //*current orientation
-        sensor.AddObservation(this.transform.rotation.x);
-        sensor.AddObservation(this.transform.rotation.y);
         sensor.AddObservation(this.transform.rotation.z);
     }
     public override void OnActionReceived(ActionBuffers actionBuffers)
@@ -60,18 +67,24 @@ public class Orbiter : Agent
         }
         //* Rewards
         float distanceToHome = Vector3.Distance(this.transform.localPosition,Vector3.zero);
-        if (false) //placeholder
+        if (orbitalProperties.apogee == apoapsis)
         {
+            acheivedTargetOrbit = true;
+            SetReward(2.0f);
+        }
+        else if (properties.contact == true || acheivedTargetOrbit == false){
+            Debug.Log("Crashlanding");
+            SetReward(-1.0f);
             EndEpisode();
         }
-        else if (properties.contact == true){
-            Debug.Log("Crashlanding");
-            SetReward(-2.0f);
+        else if (properties.contact == true || acheivedTargetOrbit)
+        {
             EndEpisode();
         }
         else if (distanceToHome > 100000f)
         {
             Debug.Log("Lost to the void");
+            SetReward(-0.5f);
             EndEpisode();
         }
     }

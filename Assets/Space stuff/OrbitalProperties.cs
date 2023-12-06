@@ -17,10 +17,10 @@ public class OrbitalProperties : MonoBehaviour
     private GravWell gravWell;
     private GameObject[] celestials;
     private Rigidbody rBody;
-    [SerializeField]
-    private float apogee;
-    [SerializeField]
-    private float perigee;
+    
+    public float apogee;
+    
+    public float perigee;
     [SerializeField]
     private float angularMomentum;
     [SerializeField]
